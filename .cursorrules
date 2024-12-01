@@ -53,7 +53,7 @@ Follow these rules when building the project.
 ### General Rules
 
 - Use `@` to import anything from the project unless otherwise specified
-- Use kebab case for all files and folders unless otherwise specified
+- Use camel case for all files and folders unless otherwise specified
 
 #### Env Rules
 
