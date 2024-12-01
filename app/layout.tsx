@@ -23,11 +23,20 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   const { userId } = auth()
+  console.log("Current userId:", userId)
 
   if (userId) {
-    const profile = await getProfileByUserId(userId)
-    if (!profile) {
-      await createProfile({ userId })
+    try {
+      const profile = await getProfileByUserId(userId)
+      console.log("Existing profile:", profile)
+
+      if (!profile) {
+        console.log("Creating new profile for userId:", userId)
+        const newProfile = await createProfile({ userId })
+        console.log("Created new profile:", newProfile)
+      }
+    } catch (error) {
+      console.error("Error in profile creation:", error)
     }
   }
 
