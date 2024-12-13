@@ -43,5 +43,11 @@ export default async function SearchLayout({
 async function SidebarFetcher({ userId }: { userId: string }) {
   const { data: chats } = await getChatsByUserIdAction(userId)
 
-  return <Sidebar className="w-72 border-r" initialChats={chats || []} />
+  return (
+    <Sidebar
+      className="w-72 border-r"
+      userId={userId}
+      initialChats={chats || []}
+    />
+  )
 }

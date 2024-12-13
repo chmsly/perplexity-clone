@@ -1,43 +1,29 @@
-"use server"
+"use client"
 
-import { Suspense } from "react"
-import { auth } from "@clerk/nextjs/server"
-import { getChatsAction, createChatAction } from "@/actions/db/chats-actions"
-import SidebarClient from "./sidebar-client"
-import SidebarSkeleton from "./sidebar-skeleton"
+import { SelectChat } from "@/db/schema"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { useState } from "react"
-import { SelectChat } from "@/db/schema"
+import SidebarClient from "./sidebar-client"
 
 interface SidebarProps {
   className?: string
   userId: string
   initialChats: SelectChat[]
+  onCreateChat: () => Promise<void>
 }
 
-export default function Sidebar({ className = "" }: { className?: string }) {
-  return (
-    <Suspense fallback={<SidebarSkeleton />}>
-      <SidebarFetcher className={className} />
-    </Suspense>
-  )
-}
-
-async function SidebarFetcher({ className }: { className?: string }) {
-  const { userId } = auth()
-  if (!userId) return null
-
-  const { data: chats } = await getChatsAction(userId)
-
-  async function handleCreateChat() {
-    "use server"
-    await createChatAction(userId, "New Chat")
-  }
+export default function Sidebar({
+  className,
+  userId,
+  initialChats,
+  onCreateChat
+}: SidebarProps) {
+  const [chats, setChats] = useState(initialChats)
 
   return (
     <div className="flex h-full flex-col">
-      <form action={handleCreateChat} className="p-4">
+      <form action={onCreateChat} className="p-4">
         <Button
           className="w-full bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
           variant="ghost"
@@ -48,7 +34,7 @@ async function SidebarFetcher({ className }: { className?: string }) {
         </Button>
       </form>
 
-      <SidebarClient className={className} chats={chats || []} />
+      <SidebarClient className={className} chats={chats} />
     </div>
   )
 }
