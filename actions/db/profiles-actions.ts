@@ -7,20 +7,26 @@ import {
 import { InsertProfile, SelectProfile } from "@/db/schema/profiles-schema"
 import { ActionState } from "@/types"
 import { revalidatePath } from "next/cache"
+import { db } from "@/db/db"
+import { profilesTable } from "@/db/schema"
+import { nanoid } from "nanoid"
 
 export async function createProfileAction(
-  data: InsertProfile
-): Promise<ActionState<SelectProfile>> {
+  userId: string
+): Promise<ActionState<null>> {
   try {
-    const newProfile = await createProfile(data)
-    revalidatePath("/")
+    await db.insert(profilesTable).values({
+      id: nanoid(),
+      userId,
+      membership: "pro" // Temporarily set all users to pro for testing
+    })
+    
     return {
       isSuccess: true,
-      message: "Profile created successfully",
-      data: newProfile
+      message: "Profile created successfully"
     }
   } catch (error) {
-    console.error("Error creating profile", error)
+    console.error("Error creating profile:", error)
     return { isSuccess: false, message: "Failed to create profile" }
   }
 }
