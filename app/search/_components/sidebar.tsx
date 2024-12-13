@@ -7,6 +7,14 @@ import SidebarClient from "./sidebar-client"
 import SidebarSkeleton from "./sidebar-skeleton"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { useState } from "react"
+import { SelectChat } from "@/db/schema"
+
+interface SidebarProps {
+  className?: string
+  userId: string
+  initialChats: SelectChat[]
+}
 
 export default function Sidebar({ className = "" }: { className?: string }) {
   return (
