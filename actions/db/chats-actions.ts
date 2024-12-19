@@ -1,33 +1,16 @@
 "use server"
 
-import { createChat, deleteChat, getChatsByUserId } from "@/db/queries/chats-queries"
-import { SelectChat } from "@/db/schema"
+import { db } from "@/db/db"
+import { chatsTable } from "@/db/schema"
+import { eq } from "drizzle-orm"
 import { ActionState } from "@/types"
-import { revalidatePath } from "next/cache"
+import { SelectChat } from "@/db/schema"
 
-export async function createChatAction(
-  userId: string,
-  name: string
-): Promise<ActionState<SelectChat>> {
+export async function getChatsAction(userId: string): Promise<ActionState<SelectChat[]>> {
   try {
-    const chat = await createChat({ userId, name })
-    revalidatePath("/")
-    return {
-      isSuccess: true,
-      message: "Chat created successfully",
-      data: chat
-    }
-  } catch (error) {
-    console.error("Error creating chat:", error)
-    return { isSuccess: false, message: "Failed to create chat" }
-  }
-}
-
-export async function getChatsAction(
-  userId: string
-): Promise<ActionState<SelectChat[]>> {
-  try {
-    const chats = await getChatsByUserId(userId)
+    const chats = await db.query.chats.findMany({
+      where: eq(chatsTable.userId, userId)
+    })
     return {
       isSuccess: true,
       message: "Chats retrieved successfully",
@@ -36,22 +19,5 @@ export async function getChatsAction(
   } catch (error) {
     console.error("Error getting chats:", error)
     return { isSuccess: false, message: "Failed to get chats" }
-  }
-}
-
-export async function deleteChatAction(
-  chatId: string
-): Promise<ActionState<SelectChat>> {
-  try {
-    const chat = await deleteChat(chatId)
-    revalidatePath("/")
-    return {
-      isSuccess: true,
-      message: "Chat deleted successfully",
-      data: chat
-    }
-  } catch (error) {
-    console.error("Error deleting chat:", error)
-    return { isSuccess: false, message: "Failed to delete chat" }
   }
 } 

@@ -13,7 +13,7 @@ export default async function SearchLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { userId } = auth()
+  const { userId } = await auth()
 
   if (!userId) {
     return redirect("/login")
