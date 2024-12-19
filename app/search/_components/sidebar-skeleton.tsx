@@ -2,15 +2,14 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 
-export default function SidebarSkeleton() {
+export default function SidebarSkeleton({ className }: { className?: string }) {
   return (
-    <div className={`space-y-4} border-r p-4`}>
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-3/4" />
-      <Skeleton className="h-10 w-1/2" />
-      <Skeleton className="h-10 w-5/6" />
-      <Skeleton className="h-10 w-2/3" />
-      <Skeleton className="h-10 w-3/4" />
+    <div className={className}>
+      <div className="space-y-4 p-4">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
     </div>
   )
 }
