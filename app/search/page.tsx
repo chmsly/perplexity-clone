@@ -1,11 +1,16 @@
 import { Suspense } from "react"
+import { auth } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation"
 import ChatArea from "./_components/chat-area"
 import ChatAreaSkeleton from "./_components/chat-area-skeleton"
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  const { userId } = auth()
+  if (!userId) redirect("/login")
+
   return (
     <Suspense fallback={<ChatAreaSkeleton />}>
-      <ChatArea />
+      <ChatArea userId={userId} />
     </Suspense>
   )
 }
