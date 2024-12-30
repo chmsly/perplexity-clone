@@ -1,25 +1,26 @@
-"use server"
-
-import { Button } from "@/components/ui/button"
-import { SignedIn, SignedOut } from "@clerk/nextjs"
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 
-export default async function HomePage() {
+export default function MarketingPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center gap-4 p-24">
-      <SignedIn>
-        <div>Welcome to Perplexity Clone</div>
-        <Link href="/search">
-          <Button>Start Searching &rarr;</Button>
+    <div className="flex h-[calc(100vh-56px)] flex-col items-center justify-center gap-4 px-4 text-center">
+      <h1 className="text-4xl font-bold">
+        Get instant answers with AI-powered search
+      </h1>
+      <p className="text-muted-foreground max-w-2xl text-lg">
+        Experience a new way to search the web. Our AI-powered search engine
+        provides concise, accurate answers while citing sources in real-time.
+      </p>
+      <div className="flex gap-4">
+        <Link href="/signup">
+          <Button size="lg">Get Started</Button>
         </Link>
-      </SignedIn>
-
-      <SignedOut>
-        <div>Please login to access the search page</div>
-        <Link href="/login">
-          <Button>Login</Button>
+        <Link href="/pricing">
+          <Button size="lg" variant="outline">
+            View Pricing
+          </Button>
         </Link>
-      </SignedOut>
-    </main>
+      </div>
+    </div>
   )
 }
