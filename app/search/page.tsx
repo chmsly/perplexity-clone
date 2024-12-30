@@ -1,14 +1,11 @@
-"use server"
-
-import { auth } from "@clerk/nextjs/server"
+import { Suspense } from "react"
 import ChatArea from "./_components/chat-area"
+import ChatAreaSkeleton from "./_components/chat-area-skeleton"
 
-export default async function NewChatPage() {
-  const { userId } = auth()
-
-  if (!userId) {
-    return <div>Please log in to view this page.</div>
-  }
-
-  return <ChatArea initialMessages={[]} initialSources={[]} userId={userId} />
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<ChatAreaSkeleton />}>
+      <ChatArea />
+    </Suspense>
+  )
 }
