@@ -1,9 +1,8 @@
 "use server"
 
 import { db } from "@/db/db"
-import { messagesTable } from "@/db/schema"
+import { InsertMessage, messagesTable } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { InsertMessage } from "@/db/schema"
 
 export const createMessage = async (data: InsertMessage) => {
   try {
@@ -17,12 +16,24 @@ export const createMessage = async (data: InsertMessage) => {
 
 export const getMessagesByChatId = async (chatId: string) => {
   try {
-    return db.query.messages.findMany({
+    return await db.query.messages.findMany({
       where: eq(messagesTable.chatId, chatId),
-      orderBy: messages => messages.createdAt
+      orderBy: (messages, { asc }) => [asc(messages.createdAt)]
     })
   } catch (error) {
     console.error("Error getting messages:", error)
     throw new Error("Failed to get messages")
+  }
+}
+
+export const deleteMessagesByChatId = async (chatId: string) => {
+  try {
+    return await db
+      .delete(messagesTable)
+      .where(eq(messagesTable.chatId, chatId))
+      .returning()
+  } catch (error) {
+    console.error("Error deleting messages:", error)
+    throw new Error("Failed to delete messages")
   }
 }
