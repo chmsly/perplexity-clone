@@ -1,15 +1,35 @@
-export type ActionState<T> = {
+export interface ActionState<T> {
   isSuccess: boolean
   message: string
   data?: T
 }
 
-export type ActionError = {
-  code: string
+export interface ApiResponse<T> {
+  success: boolean
   message: string
+  data?: T
 }
 
-export type ActionResponse<T> = {
-  data?: T
-  error?: ActionError
+export interface SearchResponse {
+  answer: string
+  sources: string[]
+}
+
+export interface SourceMetadata {
+  title: string
+  url: string
+  snippet: string
+}
+
+export interface SearchResult {
+  query: string
+  answer: string
+  sources: SourceMetadata[]
+  timestamp: string
+}
+
+export interface SearchHistory {
+  id: string
+  query: string
+  timestamp: string
 }
