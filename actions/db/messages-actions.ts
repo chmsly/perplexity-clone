@@ -5,24 +5,56 @@ import { InsertMessage, SelectMessage } from "@/db/schema"
 import { ActionState } from "@/types"
 import { revalidatePath } from "next/cache"
 
+interface MessageResponse {
+  messages: SelectMessage[]
+  sources: string[]
+}
+
 export async function createMessageAction(
-  message: InsertMessage
-): Promise<ActionState<SelectMessage>> {
+  data: InsertMessage
+): Promise<ActionState<MessageResponse>> {
   try {
-    const newMessage = await createMessage(message)
+    // Create the user's message
+    const userMessage = await createMessage(data)
+
+    // Simulate AI processing time
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Create AI response
+    const aiMessage = await createMessage({
+      chatId: data.chatId,
+      content: "This is a simulated AI response. Replace with actual AI integration.",
+      role: "assistant"
+    })
+
+    // Get all messages for the chat
+    const messages = await getMessagesByChatId(data.chatId)
+
+    // Simulate sources
+    const sources = [
+      "https://example.com/source1",
+      "https://example.com/source2"
+    ]
+
     revalidatePath("/")
     return {
       isSuccess: true,
-      message: "Message created successfully",
-      data: newMessage
+      message: "Messages created successfully",
+      data: {
+        messages,
+        sources
+      }
     }
   } catch (error) {
-    console.error("Error creating message:", error)
-    return { isSuccess: false, message: "Failed to create message" }
+    console.error("Error in createMessageAction:", error)
+    return {
+      isSuccess: false,
+      message: "Failed to create message"
+    }
   }
 }
 
-export async function getMessagesAction(
+export async function getMessagesByChatIdAction(
   chatId: string
 ): Promise<ActionState<SelectMessage[]>> {
   try {
@@ -33,7 +65,10 @@ export async function getMessagesAction(
       data: messages
     }
   } catch (error) {
-    console.error("Error getting messages:", error)
-    return { isSuccess: false, message: "Failed to get messages" }
+    console.error("Error in getMessagesByChatIdAction:", error)
+    return {
+      isSuccess: false,
+      message: "Failed to get messages"
+    }
   }
 } 
