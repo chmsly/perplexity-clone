@@ -27,7 +27,7 @@ export default function Sidebar({ initialChats, className }: SidebarProps) {
   }, [initialChats])
 
   const handleNewSearch = () => {
-    router.push("/search?new=true")
+    router.push("/search")
   }
 
   const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
@@ -39,6 +39,9 @@ export default function Sidebar({ initialChats, className }: SidebarProps) {
     const result = await deleteChatAction(chatId)
     if (result.isSuccess) {
       router.refresh()
+      if (chatId === currentChatId) {
+        router.push("/search")
+      }
     } else {
       console.error(result.message)
       setChats(startingChats)
@@ -84,7 +87,7 @@ export default function Sidebar({ initialChats, className }: SidebarProps) {
                   onClick={e => handleDeleteChat(e, chat.id)}
                   className="ml-2 text-red-500 hover:text-red-700"
                 >
-                  <Trash2 size={18} />
+                  <Trash2 className="size-4" />
                 </button>
               )}
             </Link>
