@@ -4,7 +4,8 @@ import { createChatAction } from "@/actions/db/chats-actions"
 import { createMessageAction } from "@/actions/db/messages-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { SelectChat, SelectMessage } from "@/db/schema"
+import { SelectMessage } from "@/db/schema"
+import { useEnter } from "@/lib/hooks/use-enter"
 import { Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -24,8 +25,7 @@ export default function SearchForm({
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSearch = async () => {
     if (!query.trim() || isLoading) return
 
     setIsLoading(true)
@@ -64,8 +64,16 @@ export default function SearchForm({
     }
   }
 
+  useEnter(handleSearch, [query, isLoading])
+
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4">
+    <form
+      onSubmit={e => {
+        e.preventDefault()
+        handleSearch()
+      }}
+      className="flex gap-2 p-4"
+    >
       <Input
         placeholder="Ask me anything..."
         value={query}
