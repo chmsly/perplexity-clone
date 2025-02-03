@@ -3,7 +3,9 @@
 import { cn } from "@/lib/utils"
 import { SelectChat } from "@/db/schema"
 import { Button } from "@/components/ui/button"
-import { PlusIcon } from "lucide-react"
+import { PlusCircle } from "lucide-react"
+import Link from "next/link"
+import { useParams } from "next/navigation"
 
 interface SidebarClientProps {
   className?: string
@@ -14,25 +16,34 @@ export default function SidebarClient({
   className,
   chats
 }: SidebarClientProps) {
+  const params = useParams()
+  const currentChatId = params.chatId
+
   return (
     <div className={cn("bg-muted/10 h-full w-80 border-r", className)}>
       <div className="space-y-4 p-4">
         <h2 className="font-semibold">Recent Searches</h2>
 
-        <Button className="w-full">
-          <PlusIcon className="mr-2 size-4" />
-          New Chat
-        </Button>
+        <Link href="/search">
+          <Button className="w-full">
+            <PlusCircle className="mr-2 size-4" />
+            New Chat
+          </Button>
+        </Link>
 
         <div className="space-y-2">
           {chats.map(chat => (
-            <Button
-              key={chat.id}
-              variant="ghost"
-              className="w-full justify-start"
-            >
-              {chat.name}
-            </Button>
+            <Link key={chat.id} href={`/search/${chat.id}`}>
+              <Button
+                variant="ghost"
+                className={cn("w-full justify-start", {
+                  "bg-primary text-primary-foreground":
+                    chat.id === currentChatId
+                })}
+              >
+                {chat.name || "Untitled Search"}
+              </Button>
+            </Link>
           ))}
         </div>
       </div>
