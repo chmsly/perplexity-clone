@@ -1,14 +1,14 @@
 "use server"
 
 import { auth } from "@clerk/nextjs/server"
-import { getChatsAction } from "@/actions/db/chats-actions"
+import { getChatsByUserId } from "@/db/queries/chats-queries"
 import Sidebar from "./sidebar"
 
-export async function SidebarContainer() {
+export default async function SidebarContainer() {
   const { userId } = auth()
   if (!userId) return null
 
-  const { data: chats } = await getChatsAction(userId)
+  const chats = await getChatsByUserId(userId)
 
-  return <Sidebar className="w-64 border-r" chats={chats || []} />
+  return <Sidebar className="w-64 border-r" initialChats={chats} />
 }
