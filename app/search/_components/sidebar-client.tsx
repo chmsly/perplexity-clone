@@ -1,51 +1,96 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import { SelectChat } from "@/db/schema"
+import { deleteChatAction } from "@/actions/db/chats-actions"
 import { Button } from "@/components/ui/button"
-import { PlusCircle } from "lucide-react"
+import { SelectChat } from "@/db/schema"
+import { cn } from "@/lib/utils"
+import { PlusCircle, Trash2 } from "lucide-react"
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
+import { useState } from "react"
 
 interface SidebarClientProps {
-  className?: string
   chats: SelectChat[]
+  className?: string
 }
 
 export default function SidebarClient({
-  className,
-  chats
+  chats: initialChats,
+  className
 }: SidebarClientProps) {
+  const [chats, setChats] = useState<SelectChat[]>(initialChats)
+  const [hoveredChatId, setHoveredChatId] = useState<string | null>(null)
+
   const params = useParams()
+  const router = useRouter()
   const currentChatId = params.chatId
 
+  const handleNewSearch = () => {
+    router.push("/search")
+  }
+
+  const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const startingChats = [...chats]
+    setChats(startingChats.filter(chat => chat.id !== chatId))
+    const result = await deleteChatAction(chatId)
+    if (result.isSuccess) {
+      router.refresh()
+      if (chatId === currentChatId) {
+        router.push("/search")
+      }
+    } else {
+      console.error(result.message)
+      setChats(startingChats)
+    }
+  }
+
   return (
-    <div className={cn("bg-muted/10 h-full w-80 border-r", className)}>
-      <div className="space-y-4 p-4">
-        <h2 className="font-semibold">Recent Searches</h2>
+    <div className={cn("bg-secondary flex flex-col", className)}>
+      <div className="flex items-center justify-between p-4 text-xl font-bold">
+        <div>Searches</div>
+        <Button size="sm" onClick={handleNewSearch}>
+          <PlusCircle className="mr-2 size-4" />
+          New Search
+        </Button>
+      </div>
 
-        <Link href="/search">
-          <Button className="w-full">
-            <PlusCircle className="mr-2 size-4" />
-            New Chat
-          </Button>
-        </Link>
-
-        <div className="space-y-2">
-          {chats.map(chat => (
-            <Link key={chat.id} href={`/search/${chat.id}`}>
-              <Button
-                variant="ghost"
-                className={cn("w-full justify-start", {
-                  "bg-primary text-primary-foreground":
-                    chat.id === currentChatId
-                })}
-              >
+      <div className="flex-1 overflow-auto pb-6">
+        {chats.length === 0 ? (
+          <div className="text-muted-foreground p-4 text-center">
+            No searches yet.
+          </div>
+        ) : (
+          chats.map(chat => (
+            <Link
+              key={chat.id}
+              href={`/search/${chat.id}`}
+              className={cn(
+                "hover:bg-primary hover:text-primary-foreground flex items-center justify-between px-4 py-2 hover:opacity-80",
+                chat.id === currentChatId
+                  ? "bg-primary text-primary-foreground"
+                  : ""
+              )}
+              title={chat.name || "Untitled Search"}
+              onMouseEnter={() => setHoveredChatId(chat.id)}
+              onMouseLeave={() => setHoveredChatId(null)}
+            >
+              <span className="w-full overflow-hidden truncate text-ellipsis">
                 {chat.name || "Untitled Search"}
-              </Button>
+              </span>
+              {hoveredChatId === chat.id && (
+                <button
+                  onClick={e => handleDeleteChat(e, chat.id)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              )}
             </Link>
-          ))}
-        </div>
+          ))
+        )}
       </div>
     </div>
   )
