@@ -3,10 +3,13 @@
 import { auth } from "@clerk/nextjs/server"
 import { getChatsByUserId } from "@/db/queries/chats-queries"
 import SidebarClient from "./sidebar-client"
+import { redirect } from "next/navigation"
 
 export default async function SidebarContainer() {
   const { userId } = auth()
-  if (!userId) return null
+  if (!userId) {
+    redirect("/login")
+  }
 
   const chats = await getChatsByUserId(userId)
 
