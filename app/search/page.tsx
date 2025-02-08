@@ -8,12 +8,18 @@ import ChatArea from "./_components/chat-area"
 import ChatAreaSkeleton from "./_components/chat-area-skeleton"
 
 export default async function SearchPage() {
-  const { userId } = auth()
-  if (!userId) return redirect("/login")
+  const { userId } = await auth()
+  if (!userId) {
+    redirect("/login")
+  }
 
   const profile = await getProfileByUserId(userId)
-  if (!profile) return redirect("/signup")
-  if (profile.membership === "free") return redirect("/pricing")
+  if (!profile) {
+    redirect("/signup")
+  }
+  if (profile.membership === "free") {
+    redirect("/pricing")
+  }
 
   return (
     <Suspense fallback={<ChatAreaSkeleton />}>
