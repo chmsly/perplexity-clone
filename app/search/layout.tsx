@@ -4,7 +4,7 @@ import { Suspense } from "react"
 import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
 import { getProfileByUserId } from "@/db/queries/profiles-queries"
-import Sidebar from "./_components/sidebar"
+import SidebarContainer from "./_components/sidebar-container"
 import SidebarSkeleton from "./_components/sidebar-skeleton"
 
 export default async function SearchLayout({
@@ -22,7 +22,7 @@ export default async function SearchLayout({
   return (
     <div className="flex h-screen">
       <Suspense fallback={<SidebarSkeleton className="w-64 border-r" />}>
-        <Sidebar userId={userId} />
+        <SidebarContainer />
       </Suspense>
       <main className="flex-1">{children}</main>
     </div>
