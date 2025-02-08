@@ -1,7 +1,7 @@
 "use server"
 
 import { Suspense } from "react"
-import { auth } from "@clerk/nextjs/server"
+import { currentUser } from "@clerk/nextjs"
 import { redirect } from "next/navigation"
 import { getProfileByUserId } from "@/db/queries/profiles-queries"
 import SidebarContainer from "./_components/sidebar-container"
@@ -12,12 +12,12 @@ interface SearchLayoutProps {
 }
 
 export default async function SearchLayout({ children }: SearchLayoutProps) {
-  const { userId } = auth()
-  if (!userId) {
+  const user = await currentUser()
+  if (!user) {
     redirect("/login")
   }
 
-  const profile = await getProfileByUserId(userId)
+  const profile = await getProfileByUserId(user.id)
   if (!profile) {
     redirect("/signup")
   }
