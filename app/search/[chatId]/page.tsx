@@ -16,11 +16,15 @@ interface ChatPageProps {
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { userId } = auth()
-  if (!userId) return redirect("/login")
+  const { userId } = await auth()
+  if (!userId) {
+    redirect("/login")
+  }
 
   const chat = await getChatById(params.chatId)
-  if (!chat || chat.userId !== userId) return redirect("/search")
+  if (!chat || chat.userId !== userId) {
+    redirect("/search")
+  }
 
   const messages = await getMessagesByChatId(params.chatId)
 
