@@ -1,16 +1,17 @@
 "use server"
 
 import Link from "next/link"
-import { auth } from "@clerk/nextjs"
+import { auth } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation"
+
+interface MarketingLayoutProps {
+  children: React.ReactNode
+}
 
 export default async function MarketingLayout({
   children
-}: {
-  children: React.ReactNode
-}) {
-  const { userId } = auth()
-
+}: MarketingLayoutProps) {
+  const { userId } = await auth()
   if (userId) {
     redirect("/search")
   }
