@@ -20,6 +20,10 @@ export default function ChatArea({
   const [sources, setSources] = useState<string[]>([])
   const [isSearching, setIsSearching] = useState(false)
 
+  const handleSearchStart = () => {
+    setIsSearching(true)
+  }
+
   const handleSearchComplete = (
     newMessages: SelectMessage[],
     newSources: string[]
@@ -31,29 +35,22 @@ export default function ChatArea({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto">
-        <MessageList messages={messages} sources={sources} />
-        {isSearching && (
-          <div className="bg-secondary/50 flex w-full items-start gap-4 px-4 py-8">
-            <div className="bg-primary flex size-6 shrink-0 select-none items-center justify-center rounded">
-              <div className="bg-primary-foreground size-4 animate-pulse rounded-full" />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div className="animate-pulse space-y-2">
-                <div className="bg-muted h-4 w-3/4 rounded" />
-                <div className="bg-muted h-4 w-1/2 rounded" />
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="flex-1">
+        <MessageList
+          messages={messages}
+          sources={sources}
+          className="min-h-[calc(100vh-180px)]"
+        />
       </div>
 
-      <SearchForm
-        userId={userId}
-        chatId={chatId}
-        onSearchStart={() => setIsSearching(true)}
-        onSearchComplete={handleSearchComplete}
-      />
+      <div className="p-4">
+        <SearchForm
+          userId={userId}
+          chatId={chatId}
+          onSearchStart={handleSearchStart}
+          onSearchComplete={handleSearchComplete}
+        />
+      </div>
     </div>
   )
 }
