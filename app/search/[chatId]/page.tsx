@@ -16,7 +16,7 @@ interface ChatPageProps {
 }
 
 export default async function ChatPage({ params }: ChatPageProps) {
-  const { userId } = await auth()
+  const { userId } = auth()
   if (!userId) {
     redirect("/login")
   }
@@ -26,18 +26,24 @@ export default async function ChatPage({ params }: ChatPageProps) {
     redirect("/search")
   }
 
-  const messages = await getMessagesByChatId(params.chatId)
-
   return (
     <div className="flex h-full flex-col">
       <ChatHeader chat={chat} />
       <Suspense fallback={<ChatAreaSkeleton />}>
-        <ChatArea
-          userId={userId}
-          chatId={params.chatId}
-          initialMessages={messages}
-        />
+        <ChatAreaFetcher chatId={params.chatId} userId={userId} />
       </Suspense>
     </div>
   )
+}
+
+async function ChatAreaFetcher({
+  chatId,
+  userId
+}: {
+  chatId: string
+  userId: string
+}) {
+  const messages = await getMessagesByChatId(chatId)
+
+  return <ChatArea userId={userId} chatId={chatId} initialMessages={messages} />
 }
