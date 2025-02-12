@@ -1,6 +1,7 @@
 "use client"
 
 import { SelectMessage } from "@/db/schema"
+import { cn } from "@/lib/utils"
 import { useEffect, useRef } from "react"
 import Message from "./message"
 
@@ -26,9 +27,13 @@ export default function MessageList({
   }
 
   return (
-    <div className={className}>
-      {messages.map(message => (
-        <Message key={message.id} message={message} sources={sources} />
+    <div className={cn("flex flex-col gap-6 p-4", className)}>
+      {messages.map((message, i) => (
+        <Message
+          key={message.id}
+          message={message}
+          sources={i === messages.length - 1 ? sources : undefined}
+        />
       ))}
       <div ref={bottomRef} />
     </div>
