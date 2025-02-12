@@ -49,6 +49,7 @@ export default function ChatArea({
       </div>
 
       <SearchForm
+        userId={userId}
         chatId={chatId}
         onSearchStart={() => setIsSearching(true)}
         onSearchComplete={handleSearchComplete}
