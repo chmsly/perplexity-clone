@@ -55,7 +55,7 @@ export default function ChatHeader({ chat, className }: ChatHeaderProps) {
             className="size-8"
             disabled={isLoading}
           >
-            <Check className="size-4" />
+            <Check className="text-primary size-4" />
           </Button>
           <Button
             type="button"
@@ -68,7 +68,7 @@ export default function ChatHeader({ chat, className }: ChatHeaderProps) {
             }}
             disabled={isLoading}
           >
-            <X className="size-4" />
+            <X className="text-destructive size-4" />
           </Button>
         </form>
       ) : (
@@ -82,7 +82,7 @@ export default function ChatHeader({ chat, className }: ChatHeaderProps) {
             className="size-8"
             onClick={() => setIsEditing(true)}
           >
-            <Pencil className="size-4" />
+            <Pencil className="text-primary size-4" />
           </Button>
         </>
       )}
