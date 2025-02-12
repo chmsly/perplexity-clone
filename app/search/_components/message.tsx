@@ -13,54 +13,53 @@ interface MessageProps {
 }
 
 function Message({ message, sources }: MessageProps) {
-  const isAssistant = message.role === "assistant"
-
   return (
-    <div
-      className={cn(
-        "flex w-full items-start gap-4 px-4 py-8",
-        isAssistant ? "bg-secondary/50" : ""
-      )}
-    >
+    <div className="flex items-start gap-4">
       <div
         className={cn(
           "flex size-6 shrink-0 select-none items-center justify-center rounded",
-          isAssistant ? "bg-primary" : "bg-primary/10"
+          message.role === "user"
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted"
         )}
       >
-        {isAssistant ? (
-          <Bot className="text-primary-foreground size-4" />
+        {message.role === "user" ? (
+          <User className="size-4" />
         ) : (
-          <User className="text-primary size-4" />
+          <Bot className="size-4" />
         )}
       </div>
 
       <div className="flex-1 space-y-4">
         <ReactMarkdown
-          className="prose prose-neutral dark:prose-invert max-w-none space-y-4"
           remarkPlugins={[remarkGfm]}
+          components={{
+            pre: ({ node, ...props }) => (
+              <div className="bg-muted overflow-auto rounded-lg p-4">
+                <pre {...props} />
+              </div>
+            ),
+            code: ({ node, ...props }) => (
+              <code className="bg-muted rounded px-1 py-0.5" {...props} />
+            )
+          }}
         >
           {message.content}
         </ReactMarkdown>
 
-        {isAssistant && sources && sources.length > 0 && (
-          <div className="not-prose mt-4">
-            <div className="text-muted-foreground mb-2 text-sm font-medium">
-              Sources:
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {sources.map((source, i) => (
-                <a
-                  key={i}
-                  href={source}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:bg-primary/10 rounded-lg px-2 py-1 text-sm"
-                >
-                  {new URL(source).hostname}
-                </a>
-              ))}
-            </div>
+        {sources && sources.length > 0 && (
+          <div className="text-muted-foreground flex flex-wrap gap-2 text-sm">
+            {sources.map((source, i) => (
+              <a
+                key={i}
+                href={source}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground truncate underline underline-offset-2"
+              >
+                {new URL(source).hostname}
+              </a>
+            ))}
           </div>
         )}
       </div>
