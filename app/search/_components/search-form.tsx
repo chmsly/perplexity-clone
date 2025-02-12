@@ -11,12 +11,14 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 interface SearchFormProps {
+  userId: string
   chatId?: string
   onSearchStart?: () => void
   onSearchComplete?: (messages: SelectMessage[], sources: string[]) => void
 }
 
 export default function SearchForm({
+  userId,
   chatId,
   onSearchStart,
   onSearchComplete
@@ -34,7 +36,7 @@ export default function SearchForm({
     try {
       let currentChatId = chatId
       if (!currentChatId) {
-        const result = await createChatAction({ name: query })
+        const result = await createChatAction({ name: query }, userId)
         if (!result.isSuccess || !result.data) {
           throw new Error(result.message)
         }
