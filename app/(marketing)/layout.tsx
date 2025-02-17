@@ -11,7 +11,7 @@ interface MarketingLayoutProps {
 export default async function MarketingLayout({
   children
 }: MarketingLayoutProps) {
-  const { userId } = await auth()
+  const { userId } = auth()
   if (userId) {
     redirect("/search")
   }
