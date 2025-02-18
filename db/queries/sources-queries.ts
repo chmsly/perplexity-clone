@@ -3,26 +3,25 @@
 import { db } from "@/db/db"
 import { sourcesTable } from "@/db/schema"
 import { eq } from "drizzle-orm"
-import { InsertSource } from "@/db/schema"
 
-export const createSource = async (data: InsertSource) => {
+export const createSource = async (data: typeof sourcesTable.$inferInsert) => {
   try {
-    const [newSource] = await db.insert(sourcesTable).values(data).returning()
-    return newSource
+    const [source] = await db.insert(sourcesTable).values(data).returning()
+    return source
   } catch (error) {
     console.error("Error creating source:", error)
-    throw new Error("Failed to create source")
+    return null
   }
 }
 
 export const getSourcesByChatId = async (chatId: string) => {
   try {
-    return db.query.sources.findMany({
+    return await db.query.sources.findMany({
       where: eq(sourcesTable.chatId, chatId),
-      orderBy: sources => sources.createdAt
+      orderBy: (sources, { asc }) => [asc(sources.createdAt)]
     })
   } catch (error) {
-    console.error("Error getting sources:", error)
-    throw new Error("Failed to get sources")
+    console.error("Error getting sources by chat ID:", error)
+    return null
   }
 }
