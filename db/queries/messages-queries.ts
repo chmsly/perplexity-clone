@@ -1,16 +1,18 @@
 "use server"
 
 import { db } from "@/db/db"
-import { InsertMessage, messagesTable } from "@/db/schema"
+import { messagesTable } from "@/db/schema"
 import { eq } from "drizzle-orm"
 
-export const createMessage = async (data: InsertMessage) => {
+export const createMessage = async (
+  data: typeof messagesTable.$inferInsert
+) => {
   try {
-    const [newMessage] = await db.insert(messagesTable).values(data).returning()
-    return newMessage
+    const [message] = await db.insert(messagesTable).values(data).returning()
+    return message
   } catch (error) {
     console.error("Error creating message:", error)
-    throw new Error("Failed to create message")
+    return null
   }
 }
 
@@ -21,8 +23,8 @@ export const getMessagesByChatId = async (chatId: string) => {
       orderBy: (messages, { asc }) => [asc(messages.createdAt)]
     })
   } catch (error) {
-    console.error("Error getting messages:", error)
-    throw new Error("Failed to get messages")
+    console.error("Error getting messages by chat ID:", error)
+    return null
   }
 }
 
