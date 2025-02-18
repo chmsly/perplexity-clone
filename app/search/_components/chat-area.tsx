@@ -18,10 +18,9 @@ export default function ChatArea({
 }: ChatAreaProps) {
   const [messages, setMessages] = useState<SelectMessage[]>(initialMessages)
   const [sources, setSources] = useState<string[]>([])
-  const [isSearching, setIsSearching] = useState(false)
 
   const handleSearchStart = () => {
-    setIsSearching(true)
+    setSources([])
   }
 
   const handleSearchComplete = (
@@ -30,17 +29,12 @@ export default function ChatArea({
   ) => {
     setMessages(newMessages)
     setSources(newSources)
-    setIsSearching(false)
   }
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1">
-        <MessageList
-          messages={messages}
-          sources={sources}
-          className="min-h-[calc(100vh-180px)]"
-        />
+        <MessageList messages={messages} sources={sources} />
       </div>
 
       <div className="p-4">
