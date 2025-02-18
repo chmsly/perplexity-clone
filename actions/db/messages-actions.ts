@@ -1,74 +1,58 @@
 "use server"
 
 import { createMessage, getMessagesByChatId } from "@/db/queries/messages-queries"
-import { InsertMessage, SelectMessage } from "@/db/schema"
+import { messagesTable } from "@/db/schema"
 import { ActionState } from "@/types"
 import { revalidatePath } from "next/cache"
 
-interface MessageResponse {
-  messages: SelectMessage[]
-  sources: string[]
-}
-
 export async function createMessageAction(
-  data: InsertMessage
-): Promise<ActionState<MessageResponse>> {
+  data: typeof messagesTable.$inferInsert,
+  query?: string
+): Promise<
+  ActionState<{
+    messages: typeof messagesTable.$inferSelect[]
+    sources: string[]
+  }>
+> {
   try {
-    // Create the user's message
-    const userMessage = await createMessage(data)
+    const message = await createMessage(data)
 
-    // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    if (!message) throw new Error("Failed to create message")
 
-    // Create AI response
-    const aiMessage = await createMessage({
-      chatId: data.chatId,
-      content: "This is a simulated AI response. Replace with actual AI integration.",
-      role: "assistant"
-    })
-
-    // Get all messages for the chat
     const messages = await getMessagesByChatId(data.chatId)
 
-    // Simulate sources
-    const sources = [
-      "https://example.com/source1",
-      "https://example.com/source2"
-    ]
+    if (!messages) throw new Error("Failed to get messages")
 
     revalidatePath("/")
     return {
       isSuccess: true,
-      message: "Messages created successfully",
+      message: "Message created successfully",
       data: {
         messages,
-        sources
+        sources: []
       }
     }
   } catch (error) {
-    console.error("Error in createMessageAction:", error)
-    return {
-      isSuccess: false,
-      message: "Failed to create message"
-    }
+    console.error("Error creating message:", error)
+    return { isSuccess: false, message: "Failed to create message" }
   }
 }
 
 export async function getMessagesByChatIdAction(
   chatId: string
-): Promise<ActionState<SelectMessage[]>> {
+): Promise<ActionState<typeof messagesTable.$inferSelect[]>> {
   try {
     const messages = await getMessagesByChatId(chatId)
+
+    if (!messages) throw new Error("Failed to get messages")
+
     return {
       isSuccess: true,
       message: "Messages retrieved successfully",
       data: messages
     }
   } catch (error) {
-    console.error("Error in getMessagesByChatIdAction:", error)
-    return {
-      isSuccess: false,
-      message: "Failed to get messages"
-    }
+    console.error("Error getting messages:", error)
+    return { isSuccess: false, message: "Failed to get messages" }
   }
 } 
