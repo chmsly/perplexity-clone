@@ -35,7 +35,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
         <ChatArea
           userId={userId}
           chatId={params.chatId}
-          initialMessages={messages}
+          initialMessages={messages || []}
         />
       </Suspense>
     </div>
