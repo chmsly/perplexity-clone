@@ -3,68 +3,57 @@ import Link from "next/link"
 
 export default function PricingPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 text-center">
-      <div className="max-w-2xl space-y-4">
-        <h1 className="text-3xl font-bold sm:text-5xl">
-          Simple, Transparent Pricing
-        </h1>
-        <p className="text-muted-foreground text-lg sm:text-xl">
-          Choose the plan that's right for you
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Simple, transparent pricing</h1>
+        <p className="text-muted-foreground mt-2">
+          Get started for free, upgrade when you need to
         </p>
       </div>
 
-      <div className="grid w-full max-w-4xl gap-8 pt-8 sm:grid-cols-2">
-        <div className="flex flex-col gap-8 rounded-lg border p-8">
-          <div>
-            <h2 className="text-lg font-bold">Free</h2>
+      <div className="grid w-full max-w-4xl gap-8 md:grid-cols-2">
+        <div className="flex flex-col justify-between rounded-lg border p-8">
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">Free</h2>
             <p className="text-muted-foreground">
-              Basic features for casual users
+              Perfect for trying out the service
             </p>
+            <div className="text-3xl font-bold">$0</div>
           </div>
-
-          <div>
-            <div className="text-4xl font-bold">$0</div>
-            <p className="text-muted-foreground">Free forever</p>
-          </div>
-
-          <ul className="flex-1 space-y-4 text-left">
-            <li>✓ 10 searches per day</li>
+          <ul className="my-8 space-y-2">
+            <li>✓ 5 searches per day</li>
             <li>✓ Basic search capabilities</li>
-            <li>✓ Standard response time</li>
+            <li>✓ Standard support</li>
           </ul>
-
-          <Link href="/signup">
+          <Link href="/search" className="w-full">
             <Button className="w-full" size="lg">
               Get Started
             </Button>
           </Link>
         </div>
 
-        <div className="relative flex flex-col gap-8 rounded-lg border p-8">
-          <div className="bg-primary text-primary-foreground absolute -top-5 right-5 rounded-full px-3 py-1 text-sm">
+        <div className="relative flex flex-col justify-between rounded-lg border border-blue-500 p-8">
+          <div className="absolute -top-3 right-4 rounded-full bg-blue-500 px-3 py-1 text-sm text-white">
             Popular
           </div>
-
-          <div>
-            <h2 className="text-lg font-bold">Pro</h2>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold">Pro</h2>
             <p className="text-muted-foreground">
-              Advanced features for power users
+              For power users who need more
             </p>
+            <div className="text-3xl font-bold">$10</div>
+            <div className="text-muted-foreground text-sm">per month</div>
           </div>
-
-          <div>
-            <div className="text-4xl font-bold">$10</div>
-            <p className="text-muted-foreground">per month</p>
-          </div>
-
-          <ul className="flex-1 space-y-4 text-left">
+          <ul className="my-8 space-y-2">
             <li>✓ Unlimited searches</li>
             <li>✓ Advanced search capabilities</li>
-            <li>✓ Priority response time</li>
-            <li>✓ Premium support</li>
+            <li>✓ Priority support</li>
+            <li>✓ Early access to new features</li>
           </ul>
-
-          <Link href="/signup">
+          <Link
+            href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK_MONTHLY || "#"}
+            className="w-full"
+          >
             <Button className="w-full" size="lg">
               Upgrade Now
             </Button>
