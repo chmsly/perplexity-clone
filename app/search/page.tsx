@@ -7,7 +7,7 @@ import ChatArea from "./_components/chat-area"
 import ChatAreaSkeleton from "./_components/chat-area-skeleton"
 
 export default async function SearchPage() {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) {
     redirect("/login")
   }
