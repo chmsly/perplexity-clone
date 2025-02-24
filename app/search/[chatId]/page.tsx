@@ -25,7 +25,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
 }
 
 async function ChatPageContent({ chatId }: { chatId: string }) {
-  const { userId } = auth()
+  const { userId } = await auth()
   if (!userId) {
     redirect("/login")
   }
@@ -43,8 +43,8 @@ async function ChatPageContent({ chatId }: { chatId: string }) {
       <ChatHeader chat={chat} />
       <ChatArea
         chatId={chatId}
-        initialMessages={messages}
-        initialSources={sources}
+        initialMessages={messages || []}
+        initialSources={sources || []}
       />
     </div>
   )

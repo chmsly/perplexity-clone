@@ -1,24 +1,30 @@
 "use client"
 
-import { SelectMessage } from "@/db/schema"
 import { useEffect, useRef, useState } from "react"
-import MessageList from "./message-list"
+import { SelectMessage, SelectSource } from "@/db/schema"
+import { SearchInput } from "./search-input"
+import { MessageList } from "./message-list"
+import { useRouter } from "next/navigation"
+import { createChatAction } from "@/actions/db/chats-actions"
+import { createMessageAction } from "@/actions/db/messages-actions"
 import SearchForm from "./search-form"
 
 interface ChatAreaProps {
-  userId: string
   chatId?: string
   initialMessages?: SelectMessage[]
+  initialSources?: SelectSource[]
 }
 
 export default function ChatArea({
-  userId,
   chatId,
-  initialMessages = []
+  initialMessages = [],
+  initialSources = []
 }: ChatAreaProps) {
-  const [messages, setMessages] = useState<SelectMessage[]>(initialMessages)
-  const [sources, setSources] = useState<string[]>([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [messages, setMessages] = useState(initialMessages)
+  const [sources, setSources] = useState(initialSources)
+  const [loading, setLoading] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter()
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,7 +36,7 @@ export default function ChatArea({
   }, [messages])
 
   const handleSearchStart = () => {
-    setIsSearching(true)
+    setLoading(true)
   }
 
   const handleSearchComplete = (
@@ -39,7 +45,7 @@ export default function ChatArea({
   ) => {
     setMessages(newMessages)
     setSources(newSources)
-    setIsSearching(false)
+    setLoading(false)
   }
 
   return (
@@ -51,7 +57,6 @@ export default function ChatArea({
 
       <div className="p-4">
         <SearchForm
-          userId={userId}
           chatId={chatId}
           onSearchStart={handleSearchStart}
           onSearchComplete={handleSearchComplete}
