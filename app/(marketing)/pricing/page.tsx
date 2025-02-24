@@ -1,64 +1,85 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { CheckCircle2 } from "lucide-react"
 import Link from "next/link"
+
+const features = [
+  "Unlimited searches",
+  "Detailed explanations",
+  "Real-time web search",
+  "Comprehensive sources",
+  "Chat history",
+  "Mobile friendly"
+]
 
 export default function PricingPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">Simple, transparent pricing</h1>
-        <p className="text-muted-foreground mt-2">
-          Get started for free, upgrade when you need to
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 text-center">
+      <div className="mx-auto max-w-2xl space-y-4">
+        <h1 className="text-3xl font-bold sm:text-5xl">
+          Simple, transparent pricing
+        </h1>
+        <p className="text-muted-foreground text-lg sm:text-xl">
+          Get started for free, upgrade when you need to.
         </p>
       </div>
 
-      <div className="grid w-full max-w-4xl gap-8 md:grid-cols-2">
-        <div className="flex flex-col justify-between rounded-lg border p-8">
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold">Free</h2>
-            <p className="text-muted-foreground">
-              Perfect for trying out the service
-            </p>
-            <div className="text-3xl font-bold">$0</div>
+      <div className="grid w-full max-w-4xl gap-8 sm:grid-cols-2">
+        <Card className="flex flex-col p-6">
+          <h2 className="text-xl font-bold">Free</h2>
+          <div className="mt-2">
+            <span className="text-3xl font-bold">$0</span>
+            <span className="text-muted-foreground">/mo</span>
           </div>
-          <ul className="my-8 space-y-2">
-            <li>✓ 5 searches per day</li>
-            <li>✓ Basic search capabilities</li>
-            <li>✓ Standard support</li>
-          </ul>
-          <Link href="/search" className="w-full">
-            <Button className="w-full" size="lg">
-              Get Started
-            </Button>
-          </Link>
-        </div>
+          <p className="text-muted-foreground mt-2">
+            Perfect for trying out the service.
+          </p>
+          <div className="mt-6 flex flex-1 flex-col gap-4">
+            <div className="space-y-2">
+              {features.slice(0, 2).map(feature => (
+                <div key={feature} className="flex items-center gap-2">
+                  <CheckCircle2 className="text-primary size-4 shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+            <Link href="/search" className="mt-auto">
+              <Button className="w-full">Get Started</Button>
+            </Link>
+          </div>
+        </Card>
 
-        <div className="relative flex flex-col justify-between rounded-lg border border-blue-500 p-8">
-          <div className="absolute -top-3 right-4 rounded-full bg-blue-500 px-3 py-1 text-sm text-white">
+        <Card className="relative flex flex-col overflow-hidden p-6">
+          <div className="bg-primary absolute right-0 top-0 rounded-bl-lg px-3 py-1 text-sm text-white">
             Popular
           </div>
-          <div className="space-y-2">
-            <h2 className="text-xl font-bold">Pro</h2>
-            <p className="text-muted-foreground">
-              For power users who need more
-            </p>
-            <div className="text-3xl font-bold">$10</div>
-            <div className="text-muted-foreground text-sm">per month</div>
+          <h2 className="text-xl font-bold">Pro</h2>
+          <div className="mt-2">
+            <span className="text-3xl font-bold">$10</span>
+            <span className="text-muted-foreground">/mo</span>
           </div>
-          <ul className="my-8 space-y-2">
-            <li>✓ Unlimited searches</li>
-            <li>✓ Advanced search capabilities</li>
-            <li>✓ Priority support</li>
-            <li>✓ Early access to new features</li>
-          </ul>
-          <Link
-            href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK_MONTHLY || "#"}
-            className="w-full"
-          >
-            <Button className="w-full" size="lg">
-              Upgrade Now
-            </Button>
-          </Link>
-        </div>
+          <p className="text-muted-foreground mt-2">
+            Perfect for power users who need more.
+          </p>
+          <div className="mt-6 flex flex-1 flex-col gap-4">
+            <div className="space-y-2">
+              {features.map(feature => (
+                <div key={feature} className="flex items-center gap-2">
+                  <CheckCircle2 className="text-primary size-4 shrink-0" />
+                  <span>{feature}</span>
+                </div>
+              ))}
+            </div>
+            <Link
+              href={process.env.NEXT_PUBLIC_STRIPE_PAYMENT_LINK_MONTHLY || ""}
+              className="mt-auto"
+            >
+              <Button className="w-full">Upgrade Now</Button>
+            </Link>
+          </div>
+        </Card>
       </div>
     </div>
   )
