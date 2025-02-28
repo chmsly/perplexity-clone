@@ -1,13 +1,14 @@
 "use client"
 
-import { SelectMessage } from "@/db/schema"
+import { SelectMessage, SelectSource } from "@/db/schema"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef } from "react"
 import Message from "./message"
+import Sources from "./sources"
 
 interface MessageListProps {
   messages: SelectMessage[]
-  sources?: string[]
+  sources: SelectSource[]
   className?: string
 }
 
@@ -23,7 +24,12 @@ export default function MessageList({
   }, [messages])
 
   if (!messages.length) {
-    return null
+    return (
+      <div className="text-muted-foreground flex h-full flex-col items-center justify-center">
+        <p>No messages yet.</p>
+        <p>Start a search to begin.</p>
+      </div>
+    )
   }
 
   return (
@@ -35,6 +41,7 @@ export default function MessageList({
           sources={i === messages.length - 1 ? sources : undefined}
         />
       ))}
+      <Sources sources={sources} />
       <div ref={bottomRef} />
     </div>
   )
