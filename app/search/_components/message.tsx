@@ -1,70 +1,46 @@
 "use client"
 
+import { SelectMessage, SelectSource } from "@/db/schema"
 import { cn } from "@/lib/utils"
-import { SelectMessage } from "@/db/schema"
 import { Bot, User } from "lucide-react"
-import { memo } from "react"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
+import Sources from "./sources"
 
 interface MessageProps {
   message: SelectMessage
-  sources?: string[]
+  sources?: SelectSource[]
 }
 
-function Message({ message, sources }: MessageProps) {
+export default function Message({ message, sources }: MessageProps) {
   return (
-    <div className="flex items-start gap-4">
+    <div
+      className={cn(
+        "flex items-start gap-4",
+        message.role === "user" ? "justify-end" : ""
+      )}
+    >
+      {message.role === "assistant" && (
+        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-md">
+          <Bot className="size-5" />
+        </div>
+      )}
+
       <div
         className={cn(
-          "flex size-6 shrink-0 select-none items-center justify-center rounded",
+          "flex flex-col gap-2 rounded-lg px-4 py-2",
           message.role === "user"
             ? "bg-primary text-primary-foreground"
             : "bg-muted"
         )}
       >
-        {message.role === "user" ? (
-          <User className="size-4" />
-        ) : (
-          <Bot className="size-4" />
-        )}
+        <div className="whitespace-pre-wrap">{message.content}</div>
+        {sources && sources.length > 0 && <Sources sources={sources} />}
       </div>
 
-      <div className="flex-1 space-y-4">
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            pre: ({ node, ...props }) => (
-              <div className="bg-muted overflow-auto rounded-lg p-4">
-                <pre {...props} />
-              </div>
-            ),
-            code: ({ node, ...props }) => (
-              <code className="bg-muted rounded px-1 py-0.5" {...props} />
-            )
-          }}
-        >
-          {message.content}
-        </ReactMarkdown>
-
-        {sources && sources.length > 0 && (
-          <div className="text-muted-foreground flex flex-wrap gap-2 text-sm">
-            {sources.map((source, i) => (
-              <a
-                key={i}
-                href={source}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground truncate underline underline-offset-2"
-              >
-                {new URL(source).hostname}
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
+      {message.role === "user" && (
+        <div className="bg-primary text-primary-foreground flex size-8 shrink-0 items-center justify-center rounded-md">
+          <User className="size-5" />
+        </div>
+      )}
     </div>
   )
 }
-
-export default memo(Message)
