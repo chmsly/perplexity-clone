@@ -1,18 +1,18 @@
 "use client"
 
+import { useState, useRef } from "react"
+import { useRouter } from "next/navigation"
+import { SearchInput } from "./search-input"
+import { SelectMessage, SelectSource } from "@/db/schema"
 import { createChatAction } from "@/actions/db/chats-actions"
 import { createMessageAction } from "@/actions/db/messages-actions"
-import { SelectMessage } from "@/db/schema"
-import { useEnter } from "@/lib/hooks/use-enter"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { SearchInput } from "./search-input"
+import { createSourceAction } from "@/actions/db/sources-actions"
 
 interface SearchFormProps {
   userId: string
   chatId?: string
-  onSearchStart?: () => void
-  onSearchComplete?: (messages: SelectMessage[], sources: string[]) => void
+  onSearchStart: () => void
+  onSearchComplete: (messages: SelectMessage[], sources: SelectSource[]) => void
 }
 
 export default function SearchForm({
@@ -22,53 +22,122 @@ export default function SearchForm({
   onSearchComplete
 }: SearchFormProps) {
   const [query, setQuery] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const enterRef = useEnter()
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  const handleSearch = async () => {
-    if (!query.trim() || isSearching) return
+  const handleSearch = async (searchQuery: string) => {
+    if (!searchQuery.trim() || isLoading) return
 
     try {
-      setIsSearching(true)
-      onSearchStart?.()
+      setQuery(searchQuery)
+      setIsLoading(true)
+      onSearchStart()
+
+      // Cancel previous request if it exists
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort()
+      }
+
+      // Create a new abort controller
+      abortControllerRef.current = new AbortController()
+      const signal = abortControllerRef.current.signal
 
       let currentChatId = chatId
 
+      // If no chatId, create a new chat
       if (!currentChatId) {
-        const result = await createChatAction({ name: query }, userId)
-        if (!result.data) throw new Error("Failed to create chat")
+        const result = await createChatAction({
+          userId,
+          name: searchQuery
+        })
+
+        if (!result.isSuccess || !result.data) {
+          throw new Error(result.message)
+        }
+
         currentChatId = result.data.id
         router.push(`/search/${currentChatId}`)
       }
 
-      const result = await createMessageAction(
-        {
-          chatId: currentChatId,
-          content: query,
-          role: "user"
+      // Create user message
+      const userMessageResult = await createMessageAction({
+        chatId: currentChatId,
+        content: searchQuery,
+        role: "user"
+      })
+
+      if (!userMessageResult.isSuccess) {
+        throw new Error(userMessageResult.message)
+      }
+
+      // Fetch messages to get the updated list including the user message
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
         },
-        query
+        body: JSON.stringify({
+          chatId: currentChatId,
+          message: searchQuery
+        }),
+        signal
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to get response")
+      }
+
+      const data = await response.json()
+
+      // Create assistant message
+      const assistantMessageResult = await createMessageAction({
+        chatId: currentChatId,
+        content: data.answer,
+        role: "assistant"
+      })
+
+      if (!assistantMessageResult.isSuccess || !assistantMessageResult.data) {
+        throw new Error(assistantMessageResult.message)
+      }
+
+      // Create sources
+      const sourcesPromises = data.sources.map((source: any) =>
+        createSourceAction({
+          chatId: currentChatId!,
+          url: source.url,
+          title: source.title
+        })
       )
 
-      if (!result.data) throw new Error("Failed to create message")
+      await Promise.all(sourcesPromises)
 
-      onSearchComplete?.(result.data.messages, result.data.sources)
+      // Get all messages for this chat
+      const messagesResponse = await fetch(`/api/chat/${currentChatId}`)
+      const messagesData = await messagesResponse.json()
+
+      // Get all sources for this chat
+      const sourcesResponse = await fetch(`/api/sources/${currentChatId}`)
+      const sourcesData = await sourcesResponse.json()
+
+      onSearchComplete(messagesData.messages, sourcesData.sources)
       setQuery("")
     } catch (error) {
-      console.error(error)
+      if (error instanceof Error && error.name !== "AbortError") {
+        console.error("Search error:", error)
+      }
     } finally {
-      setIsSearching(false)
+      setIsLoading(false)
     }
   }
 
   return (
     <SearchInput
-      ref={enterRef}
       value={query}
       onChange={setQuery}
       onSearch={handleSearch}
-      disabled={isSearching}
+      disabled={isLoading}
+      className="mx-auto w-full max-w-2xl"
     />
   )
 }
