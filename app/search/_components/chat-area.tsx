@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { SelectMessage, SelectSource } from "@/db/schema"
 import MessageList from "./message-list"
 import SearchForm from "./search-form"
-import { auth } from "@clerk/nextjs"
+import { useAuth } from "@clerk/nextjs"
 
 interface ChatAreaProps {
   chatId?: string
@@ -21,7 +21,7 @@ export default function ChatArea({
   const [sources, setSources] = useState(initialSources)
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const { userId } = auth()
+  const { userId } = useAuth()
 
   useEffect(() => {
     setMessages(initialMessages)
