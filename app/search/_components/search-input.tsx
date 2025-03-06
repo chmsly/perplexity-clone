@@ -1,52 +1,52 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils"
 import { Search } from "lucide-react"
-import { ForwardedRef, forwardRef } from "react"
+import { useRef, useState } from "react"
 
 interface SearchInputProps {
-  onSearch: (query: string) => void
-  className?: string
+  value: string
+  onChange: (value: string) => void
+  onSearch: (value: string) => void
   disabled?: boolean
-  value?: string
-  onChange?: (value: string) => void
+  className?: string
 }
 
-export const SearchInput = forwardRef(function SearchInput(
-  { onSearch, className, disabled, value, onChange }: SearchInputProps,
-  ref: ForwardedRef<HTMLInputElement>
-) {
+export function SearchInput({
+  value,
+  onChange,
+  onSearch,
+  disabled,
+  className
+}: SearchInputProps) {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [isFocused, setIsFocused] = useState(false)
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (value?.trim()) {
-      onSearch(value)
-    }
+    onSearch(value)
   }
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
-      <div className="relative">
-        <Input
-          ref={ref}
-          className="pr-10"
-          type="text"
-          placeholder="Ask me anything..."
-          value={value}
-          onChange={e => onChange?.(e.target.value)}
-          disabled={disabled}
-        />
-
-        <Button
-          type="submit"
-          size="icon"
-          variant="ghost"
-          className="absolute right-0 top-0 h-full"
-          disabled={disabled}
-        >
-          <Search className="size-4" />
-        </Button>
-      </div>
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "bg-background ring-offset-background focus-within:ring-ring flex h-12 w-full items-center rounded-lg border px-3 focus-within:ring-2 focus-within:ring-offset-2",
+        isFocused ? "ring-2 ring-offset-2" : "",
+        className
+      )}
+    >
+      <Search className="mr-2 size-5 shrink-0 opacity-50" />
+      <input
+        ref={inputRef}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        disabled={disabled}
+        placeholder="Ask anything..."
+        className="placeholder:text-muted-foreground flex-1 border-0 bg-transparent p-0 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
     </form>
   )
-})
+}
