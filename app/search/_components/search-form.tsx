@@ -6,7 +6,7 @@ import { SearchInput } from "./search-input"
 import { SelectMessage, SelectSource } from "@/db/schema"
 import { createChatAction } from "@/actions/db/chats-actions"
 import { createMessageAction } from "@/actions/db/messages-actions"
-import { createSourceAction } from "@/actions/db/sources-actions"
+import { createSourcesAction } from "@/actions/db/sources-actions"
 
 interface SearchFormProps {
   userId: string
@@ -102,15 +102,13 @@ export default function SearchForm({
       }
 
       // Create sources
-      const sourcesPromises = data.sources.map((source: any) =>
-        createSourceAction({
+      for (const source of data.sources) {
+        await createSourcesAction({
           chatId: currentChatId!,
           url: source.url,
           title: source.title
         })
-      )
-
-      await Promise.all(sourcesPromises)
+      }
 
       // Get all messages for this chat
       const messagesResponse = await fetch(`/api/chat/${currentChatId}`)
@@ -118,9 +116,9 @@ export default function SearchForm({
 
       // Get all sources for this chat
       const sourcesResponse = await fetch(`/api/sources/${currentChatId}`)
-      const sourcesData = await sourcesResponse.json()
+      const sourcesResponseData = await sourcesResponse.json()
 
-      onSearchComplete(messagesData.messages, sourcesData.sources)
+      onSearchComplete(messagesData.messages, sourcesResponseData.sources)
       setQuery("")
     } catch (error) {
       if (error instanceof Error && error.name !== "AbortError") {

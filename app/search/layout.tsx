@@ -1,39 +1,50 @@
-"use server"
+"use client"
 
-import { Suspense } from "react"
-import { auth } from "@clerk/nextjs/server"
-import { redirect } from "next/navigation"
-import { getProfileByUserId } from "@/db/queries/profiles-queries"
-import { getChatsByUserId } from "@/db/queries/chats-queries"
+import { useAuth } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import Sidebar from "./_components/sidebar"
-import SidebarSkeleton from "./_components/sidebar-skeleton"
+import { Button } from "@/components/ui/button"
 
 interface SearchLayoutProps {
   children: React.ReactNode
 }
 
-export default async function SearchLayout({ children }: SearchLayoutProps) {
-  const { userId } = await auth()
-  if (!userId) {
-    redirect("/login")
+export default function SearchLayout({ children }: SearchLayoutProps) {
+  const { isLoaded, isSignedIn } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/login")
+    }
+  }, [isLoaded, isSignedIn, router])
+
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Loading...
+      </div>
+    )
   }
 
-  const profile = await getProfileByUserId(userId)
-  if (!profile) {
-    redirect("/signup")
+  if (!isSignedIn) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center p-4">
+        <p className="mb-4 text-center text-lg">
+          Please sign in to use the search feature
+        </p>
+        <Button asChild>
+          <a href="/login">Sign In</a>
+        </Button>
+      </div>
+    )
   }
-  if (profile.membership === "free") {
-    redirect("/pricing")
-  }
-
-  const chats = await getChatsByUserId(userId)
 
   return (
     <div className="flex h-screen">
-      <Suspense fallback={<SidebarSkeleton className="w-64 border-r" />}>
-        <Sidebar className="w-64 border-r" initialChats={chats || []} />
-      </Suspense>
-      <main className="flex-1">{children}</main>
+      <Sidebar />
+      <main className="flex-1 overflow-hidden">{children}</main>
     </div>
   )
 }

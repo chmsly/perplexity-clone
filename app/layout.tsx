@@ -1,9 +1,7 @@
 import { Toaster } from "@/components/ui/toaster"
 import { Providers } from "@/components/utilities/providers"
-import {
-  createProfile,
-  getProfileByUserId
-} from "@/db/queries/profiles-queries"
+import { getProfileByUserId } from "@/db/queries/profiles-queries"
+import { createProfileAction } from "@/actions/db/profiles-actions"
 import { ClerkProvider } from "@clerk/nextjs"
 import { auth } from "@clerk/nextjs/server"
 import type { Metadata } from "next"
@@ -32,11 +30,17 @@ export default async function RootLayout({
 
       if (!profile) {
         console.log("Creating new profile for userId:", userId)
-        const newProfile = await createProfile({ userId })
-        console.log("Created new profile:", newProfile)
+        try {
+          const result = await createProfileAction(userId)
+          console.log("Profile creation result:", result)
+        } catch (profileError) {
+          console.error("Failed to create profile:", profileError)
+          // Continue rendering the app even if profile creation fails
+        }
       }
     } catch (error) {
-      console.error("Error in profile creation:", error)
+      console.error("Error in profile lookup:", error)
+      // Continue rendering the app even if there's an error
     }
   }
 

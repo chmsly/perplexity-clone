@@ -34,7 +34,9 @@ export default function Header() {
 
         <div className="flex items-center space-x-4">
           <SignedOut>
-            <SignInButton />
+            <Button asChild variant="default">
+              <a href="/login">Sign In</a>
+            </Button>
           </SignedOut>
           <SignedIn>
             <UserButton />

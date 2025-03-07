@@ -1,4 +1,4 @@
-import { createProfile } from "@/db/queries/profiles-queries"
+import { createProfileAction } from "@/actions/db/profiles-actions"
 import { WebhookEvent } from "@clerk/nextjs/server"
 import { headers } from "next/headers"
 import { NextResponse } from "next/server"
@@ -54,14 +54,20 @@ export async function POST(req: Request) {
   const eventType = evt.type
 
   if (eventType === "user.created") {
-    const profile = await createProfile({
-      id,
-      userId: id,
-      membership: "free"
-    })
+    try {
+      // Use the action instead of direct DB call
+      const result = await createProfileAction(id)
+      console.log("Profile creation result:", result)
 
-    return NextResponse.json({ profile })
+      return NextResponse.json({ success: true })
+    } catch (error) {
+      console.error("Error creating profile in webhook:", error)
+      return NextResponse.json(
+        { error: "Failed to create profile" },
+        { status: 500 }
+      )
+    }
   }
 
-  return new NextResponse("", { status: 201 })
+  return new NextResponse(null, { status: 200 })
 }

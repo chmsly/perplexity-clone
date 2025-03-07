@@ -1,7 +1,6 @@
 "use server"
 
 import {
-  createProfile,
   getProfileByUserId
 } from "@/db/queries/profiles-queries"
 import { InsertProfile, SelectProfile } from "@/db/schema/profiles-schema"
@@ -10,16 +9,14 @@ import { revalidatePath } from "next/cache"
 import { db } from "@/db/db"
 import { profilesTable } from "@/db/schema"
 import { nanoid } from "nanoid"
+import { createProfile } from "@/db/queries/profiles-queries"
 
 export async function createProfileAction(
   userId: string
 ): Promise<ActionState<null>> {
   try {
-    await db.insert(profilesTable).values({
-      id: nanoid(),
-      userId,
-      membership: "pro" // Temporarily set all users to pro for testing
-    })
+    await createProfile(userId)
+    revalidatePath("/")
     
     return {
       isSuccess: true,

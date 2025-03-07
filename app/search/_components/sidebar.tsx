@@ -1,97 +1,79 @@
 "use client"
 
-import { deleteChatAction } from "@/actions/db/chats-actions"
+import { useState, useEffect } from "react"
+import { useAuth } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
+import { Plus, Search } from "lucide-react"
+import Link from "next/link"
 import { SelectChat } from "@/db/schema"
 import { cn } from "@/lib/utils"
-import { PlusCircle, Trash2 } from "lucide-react"
-import Link from "next/link"
-import { useParams, useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { getChatsByUserId } from "@/db/queries/chats-queries"
 
 interface SidebarProps {
-  initialChats: SelectChat[]
   className?: string
 }
 
-export default function Sidebar({ initialChats, className }: SidebarProps) {
-  const [chats, setChats] = useState<SelectChat[]>(initialChats)
-  const [hoveredChatId, setHoveredChatId] = useState<string | null>(null)
-
-  const params = useParams()
-  const router = useRouter()
-  const currentChatId = params.chatId
+export default function Sidebar({ className }: SidebarProps) {
+  const [chats, setChats] = useState<SelectChat[]>([])
+  const [loading, setLoading] = useState(true)
+  const { userId } = useAuth()
 
   useEffect(() => {
-    setChats(initialChats)
-  }, [initialChats])
+    async function fetchChats() {
+      if (!userId) return
 
-  const handleNewSearch = () => {
-    router.push("/search")
-  }
-
-  const handleDeleteChat = async (e: React.MouseEvent, chatId: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    const startingChats = [...chats]
-    setChats(startingChats.filter(chat => chat.id !== chatId))
-    const result = await deleteChatAction(chatId)
-    if (result.isSuccess) {
-      router.refresh()
-      if (chatId === currentChatId) {
-        router.push("/search")
+      try {
+        // Use a client-side fetch to get chats
+        const response = await fetch(`/api/chats?userId=${userId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setChats(data.chats || [])
+        }
+      } catch (error) {
+        console.error("Error fetching chats:", error)
+      } finally {
+        setLoading(false)
       }
-    } else {
-      console.error(result.message)
-      setChats(startingChats)
     }
-  }
+
+    fetchChats()
+  }, [userId])
 
   return (
-    <div className={cn("bg-secondary flex flex-col", className)}>
-      <div className="flex items-center justify-between p-4 text-xl font-bold">
-        <div>Searches</div>
-
-        <Button size="sm" onClick={handleNewSearch}>
-          <PlusCircle className="mr-2 size-4" />
-          New Search
+    <div className={cn("flex h-full w-64 flex-col border-r", className)}>
+      <div className="flex items-center justify-between p-4">
+        <h2 className="text-xl font-bold">Searches</h2>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/search">
+            <Plus className="size-4" />
+            <span className="sr-only">New Search</span>
+          </Link>
         </Button>
       </div>
 
       <div className="flex-1 overflow-auto pb-6">
-        {chats.length === 0 ? (
+        {loading ? (
+          <div className="text-muted-foreground p-4 text-center">
+            Loading...
+          </div>
+        ) : chats.length === 0 ? (
           <div className="text-muted-foreground p-4 text-center">
             No searches yet.
           </div>
         ) : (
-          chats.map(chat => (
-            <Link
-              key={chat.id}
-              href={`/search/${chat.id}`}
-              className={cn(
-                "hover:bg-primary hover:text-primary-foreground flex items-center justify-between px-4 py-2 hover:opacity-80",
-                chat.id === currentChatId
-                  ? "bg-primary text-primary-foreground"
-                  : ""
-              )}
-              title={chat.name || "Untitled Search"}
-              onMouseEnter={() => setHoveredChatId(chat.id)}
-              onMouseLeave={() => setHoveredChatId(null)}
-            >
-              <span className="w-full overflow-hidden truncate text-ellipsis">
-                {chat.name || "Untitled Search"}
-              </span>
-              {hoveredChatId === chat.id && (
-                <button
-                  onClick={e => handleDeleteChat(e, chat.id)}
-                  className="ml-2 text-red-500 hover:text-red-700"
+          <ul className="space-y-2 px-2">
+            {chats.map(chat => (
+              <li key={chat.id}>
+                <Link
+                  href={`/search/${chat.id}`}
+                  className="hover:bg-accent flex items-center rounded-md px-3 py-2"
                 >
-                  <Trash2 className="size-4" />
-                </button>
-              )}
-            </Link>
-          ))
+                  <Search className="mr-2 size-4" />
+                  <span className="line-clamp-1">{chat.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>
