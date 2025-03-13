@@ -1,18 +1,20 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { SearchInput } from "./search-input"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { SelectMessage, SelectSource } from "@/db/schema"
-import { createChatAction } from "@/actions/db/chats-actions"
-import { createMessageAction } from "@/actions/db/messages-actions"
-import { createSourcesAction } from "@/actions/db/sources-actions"
+import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 interface SearchFormProps {
   userId: string
   chatId?: string
-  onSearchStart: () => void
-  onSearchComplete: (messages: SelectMessage[], sources: SelectSource[]) => void
+  onSearchStart?: () => void
+  onSearchComplete?: (
+    messages: SelectMessage[],
+    sources: SelectSource[]
+  ) => void
 }
 
 export default function SearchForm({
@@ -23,119 +25,76 @@ export default function SearchForm({
 }: SearchFormProps) {
   const [query, setQuery] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const abortControllerRef = useRef<AbortController | null>(null)
 
-  const handleSearch = async (searchQuery: string) => {
-    if (!searchQuery.trim() || isLoading) return
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    if (!query.trim()) return
+    if (!userId) {
+      toast.error("You must be signed in to search")
+      return
+    }
+
+    setIsLoading(true)
+    onSearchStart?.()
 
     try {
-      setQuery(searchQuery)
-      setIsLoading(true)
-      onSearchStart()
+      console.log("Submitting search:", { query, chatId, userId })
 
-      // Cancel previous request if it exists
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-
-      // Create a new abort controller
-      abortControllerRef.current = new AbortController()
-      const signal = abortControllerRef.current.signal
-
-      let currentChatId = chatId
-
-      // If no chatId, create a new chat
-      if (!currentChatId) {
-        const result = await createChatAction({
-          userId,
-          name: searchQuery
-        })
-
-        if (!result.isSuccess || !result.data) {
-          throw new Error(result.message)
-        }
-
-        currentChatId = result.data.id
-        router.push(`/search/${currentChatId}`)
-      }
-
-      // Create user message
-      const userMessageResult = await createMessageAction({
-        chatId: currentChatId,
-        content: searchQuery,
-        role: "user"
-      })
-
-      if (!userMessageResult.isSuccess) {
-        throw new Error(userMessageResult.message)
-      }
-
-      // Fetch messages to get the updated list including the user message
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          chatId: currentChatId,
-          message: searchQuery
-        }),
-        signal
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to get response")
-      }
-
-      const data = await response.json()
-
-      // Create assistant message
-      const assistantMessageResult = await createMessageAction({
-        chatId: currentChatId,
-        content: data.answer,
-        role: "assistant"
-      })
-
-      if (!assistantMessageResult.isSuccess || !assistantMessageResult.data) {
-        throw new Error(assistantMessageResult.message)
-      }
-
-      // Create sources
-      for (const source of data.sources) {
-        await createSourcesAction({
-          chatId: currentChatId!,
-          url: source.url,
-          title: source.title
+          query,
+          chatId
         })
+      })
+
+      console.log("Search response status:", response.status)
+
+      const result = await response.json()
+      console.log("Search result:", result)
+
+      if (response.ok && result.success) {
+        // Cast the messages and sources to the expected types
+        const messages = result.data.messages as SelectMessage[]
+        const sources = result.data.sources as SelectSource[]
+
+        onSearchComplete?.(messages, sources)
+        setQuery("") // Clear the input after successful search
+      } else {
+        console.error("Search failed:", result.error)
+        toast.error(result.error || "Search failed")
       }
-
-      // Get all messages for this chat
-      const messagesResponse = await fetch(`/api/chat/${currentChatId}`)
-      const messagesData = await messagesResponse.json()
-
-      // Get all sources for this chat
-      const sourcesResponse = await fetch(`/api/sources/${currentChatId}`)
-      const sourcesResponseData = await sourcesResponse.json()
-
-      onSearchComplete(messagesData.messages, sourcesResponseData.sources)
-      setQuery("")
     } catch (error) {
-      if (error instanceof Error && error.name !== "AbortError") {
-        console.error("Search error:", error)
-      }
+      console.error("Error during search:", error)
+      toast.error("An error occurred during search")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <SearchInput
-      value={query}
-      onChange={setQuery}
-      onSearch={handleSearch}
-      disabled={isLoading}
-      className="mx-auto w-full max-w-2xl"
-    />
+    <form onSubmit={handleSubmit} className="flex items-center space-x-2">
+      <Input
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Ask anything..."
+        disabled={isLoading}
+        className="flex-1"
+      />
+      <Button type="submit" disabled={isLoading || !query.trim() || !userId}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 size-4 animate-spin" />
+            Searching...
+          </>
+        ) : (
+          "Search"
+        )}
+      </Button>
+    </form>
   )
 }

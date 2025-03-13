@@ -19,8 +19,8 @@ export default function ChatArea({
   initialMessages = [],
   initialSources = []
 }: ChatAreaProps) {
-  const [messages, setMessages] = useState(initialMessages)
-  const [sources, setSources] = useState(initialSources)
+  const [messages, setMessages] = useState<SelectMessage[]>(initialMessages)
+  const [sources, setSources] = useState<SelectSource[]>(initialSources)
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const { userId, isLoaded, isSignedIn } = useAuth()
@@ -43,7 +43,7 @@ export default function ChatArea({
   }
 
   // Handle authentication state
-  if (!isSignedIn) {
+  if (!isSignedIn || !userId) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-4">
         <p className="mb-4 text-center text-lg">
@@ -64,28 +64,33 @@ export default function ChatArea({
     newMessages: SelectMessage[],
     newSources: SelectSource[]
   ) => {
-    setMessages(newMessages)
-    setSources(newSources)
+    setMessages(prev => [...prev, ...newMessages])
+    setSources(prev => [...prev, ...newSources])
     setLoading(false)
-  }
 
-  // Ensure userId is available before rendering the form
-  if (!userId) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        Loading user data...
-      </div>
-    )
+    // If this was a new chat (no chatId), redirect to the new chat page
+    if (!chatId && newMessages.length > 0) {
+      const newChatId = newMessages[0].chatId
+      router.push(`/search/${newChatId}`)
+    }
   }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 space-y-4 overflow-auto p-4">
-        <MessageList messages={messages} sources={sources} />
+      <div className="flex-1 overflow-y-auto p-4">
+        {messages.length > 0 ? (
+          <MessageList messages={messages} sources={sources} />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <h2 className="mb-2 text-2xl font-bold">Ask anything</h2>
+            <p className="text-muted-foreground mb-8">
+              Start by typing your question below
+            </p>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
-
-      <div className="p-4">
+      <div className="border-t p-4">
         <SearchForm
           userId={userId}
           chatId={chatId}

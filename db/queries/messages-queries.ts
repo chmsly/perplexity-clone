@@ -3,28 +3,38 @@
 import { db } from "@/db/db"
 import { messagesTable } from "@/db/schema"
 import { eq } from "drizzle-orm"
+import { InsertMessage, SelectMessage } from "@/db/schema/messages-schema"
 
-export const createMessage = async (
-  data: typeof messagesTable.$inferInsert
-) => {
+export async function createMessage(
+  message: InsertMessage
+): Promise<SelectMessage> {
   try {
-    const [message] = await db.insert(messagesTable).values(data).returning()
-    return message
+    const [newMessage] = await db
+      .insert(messagesTable)
+      .values(message)
+      .returning()
+
+    return newMessage
   } catch (error) {
     console.error("Error creating message:", error)
-    return null
+    throw new Error("Failed to create message")
   }
 }
 
-export const getMessagesByChatId = async (chatId: string) => {
+export async function getMessagesByChatId(
+  chatId: string
+): Promise<SelectMessage[]> {
   try {
-    return await db.query.messages.findMany({
-      where: eq(messagesTable.chatId, chatId),
-      orderBy: (messages, { asc }) => [asc(messages.createdAt)]
-    })
+    const messages = await db
+      .select()
+      .from(messagesTable)
+      .where(eq(messagesTable.chatId, chatId))
+      .orderBy(messagesTable.createdAt)
+
+    return messages
   } catch (error) {
-    console.error("Error getting messages by chat ID:", error)
-    return null
+    console.error("Error getting messages by chat id:", error)
+    throw new Error("Failed to get messages")
   }
 }
 
