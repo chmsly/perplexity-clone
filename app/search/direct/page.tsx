@@ -21,7 +21,7 @@ export default function DirectSearchPage() {
     try {
       console.log("Submitting direct search:", { query })
 
-      const response = await fetch("/api/search/direct", {
+      const response = await fetch("/api/search/simple", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
