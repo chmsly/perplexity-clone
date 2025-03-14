@@ -64,8 +64,12 @@ export default function ChatArea({
     newMessages: SelectMessage[],
     newSources: SelectSource[]
   ) => {
-    setMessages(prev => [...prev, ...newMessages])
-    setSources(prev => [...prev, ...newSources])
+    console.log("Search complete with messages:", newMessages)
+    console.log("Search complete with sources:", newSources)
+
+    // Replace existing messages with new ones
+    setMessages(newMessages)
+    setSources(newSources)
     setLoading(false)
 
     // If this was a new chat (no chatId), redirect to the new chat page

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standalone Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      padding: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 0;
+    }
+    
+    main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #ffffff;
+    }
+    
+    #empty-state {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    #empty-state h2 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    #empty-state p {
+      color: #6b7280;
+    }
+    
+    #messages {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .message {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    
+    .user-message {
+      justify-content: flex-end;
+    }
+    
+    .ai-message {
+      justify-content: flex-start;
+    }
+    
+    .message-content {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
+    
+    .user-message .message-content {
+      background-color: #0070f3;
+      color: white;
+    }
+    
+    .ai-message .message-content {
+      background-color: #f3f4f6;
+      color: black;
+    }
+    
+    footer {
+      padding: 20px;
+      border-top: 1px solid #e5e7eb;
+      background-color: #f9fafb;
+    }
+    
+    form {
+      display: flex;
+      max-width: 800px;
+      margin: 0 auto;
+      gap: 10px;
+    }
+    
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    button {
+      padding: 10px 16px;
+      background-color: #0070f3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Standalone Search</h1>
+  </header>
+  
+  <main>
+    <div id="empty-state">
+      <h2>Ask anything</h2>
+      <p>Start by typing your question below</p>
+    </div>
+    
+    <div id="messages"></div>
+  </main>
+  
+  <footer>
+    <form id="search-form">
+      <input 
+        id="search-input"
+        type="text" 
+        placeholder="Ask anything..." 
+      />
+      <button type="submit">Search</button>
+    </form>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('search-form');
+      const input = document.getElementById('search-input');
+      const messagesContainer = document.getElementById('messages');
+      const emptyState = document.getElementById('empty-state');
+      
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const query = input.value.trim();
+        if (!query) return;
+        
+        // Hide empty state
+        emptyState.style.display = 'none';
+        
+        // Add user message
+        const userMessageEl = document.createElement('div');
+        userMessageEl.className = 'message user-message';
+        userMessageEl.innerHTML = `<div class="message-content">${query}</div>`;
+        messagesContainer.appendChild(userMessageEl);
+        
+        // Add AI message
+        const aiMessageEl = document.createElement('div');
+        aiMessageEl.className = 'message ai-message';
+        aiMessageEl.innerHTML = `<div class="message-content">This is a simulated response to: "${query}". No API call is being made.</div>`;
+        messagesContainer.appendChild(aiMessageEl);
+        
+        // Clear input
+        input.value = '';
+        
+        // Scroll to bottom
+        window.scrollTo(0, document.body.scrollHeight);
+      });
+    });
+  </script>
+</body>
+</html> 
