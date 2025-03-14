@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
-import { nanoid } from "nanoid"
+import { randomUUID } from "crypto"
 
 export async function POST(req: Request) {
   try {
-    const { query } = await req.json()
+    // Parse request body
+    const body = await req.json()
+    const { query, chatId } = body
+
+    console.log("Bypass search API called with:", { query, chatId })
 
     if (!query) {
       return NextResponse.json(
@@ -16,51 +20,61 @@ export async function POST(req: Request) {
     }
 
     // Create a simulated response without using the database
-    const chatId = nanoid()
-    const messageId = nanoid()
-    const sourceId = nanoid()
+    const generatedChatId = chatId || randomUUID()
+    const userMessageId = randomUUID()
+    const aiMessageId = randomUUID()
+    const sourceId = randomUUID()
 
-    return NextResponse.json({
+    const response = {
       success: true,
       data: {
         chat: {
-          id: chatId,
+          id: generatedChatId,
           name: query.substring(0, 30),
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         },
         messages: [
           {
-            id: nanoid(),
-            chatId,
+            id: userMessageId,
+            chatId: generatedChatId,
             content: query,
             role: "user",
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           },
           {
-            id: messageId,
-            chatId,
+            id: aiMessageId,
+            chatId: generatedChatId,
             content: `This is a simulated response to: "${query}". The database connection is currently not working.`,
             role: "assistant",
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           }
         ],
         sources: [
           {
             id: sourceId,
-            messageId,
+            messageId: aiMessageId,
+            chatId: generatedChatId,
             title: "Example Source",
             url: "https://example.com",
-            content: "This is an example source content."
+            content: "This is an example source content.",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           }
         ]
       }
-    })
+    }
+
+    console.log("Sending simulated response")
+    return NextResponse.json(response)
   } catch (error) {
     console.error("Error in bypass search:", error)
     return NextResponse.json(
       {
         success: false,
-        error: "An error occurred"
+        error: "An error occurred during search"
       },
       { status: 500 }
     )

@@ -75,7 +75,12 @@ export default function ChatArea({
     // If this was a new chat (no chatId), redirect to the new chat page
     if (!chatId && newMessages.length > 0) {
       const newChatId = newMessages[0].chatId
-      router.push(`/search/${newChatId}`)
+      console.log("Redirecting to new chat:", newChatId)
+
+      // Use a small delay to ensure state is updated before redirect
+      setTimeout(() => {
+        router.push(`/search/${newChatId}`)
+      }, 100)
     }
   }
 
